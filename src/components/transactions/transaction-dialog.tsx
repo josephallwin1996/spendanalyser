@@ -263,7 +263,7 @@ function TransactionDialogContent({ onClose, members, currency, transaction }: D
           </Field>
         </div>
 
-        <div className="flex items-center justify-between gap-3 border-t border-white/[0.06] pt-4">
+        <div className="sticky bottom-[-20px] z-10 -mx-6 flex items-center justify-between gap-3 border-t border-white/[0.06] bg-[#101217]/95 px-6 pt-4 pb-[max(12px,env(safe-area-inset-bottom))] backdrop-blur-xl sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:pb-0 sm:backdrop-blur-none">
           <p className="max-w-[150px] text-[10.5px] leading-relaxed text-muted/70">
             {type === "income" ? "Money in" : "Money out"} · visible to both of you
           </p>

@@ -96,7 +96,7 @@ export function Dialog({
             <X size={17} />
           </button>
         </div>
-        <div className="scrollbar-slim overflow-y-auto px-6 py-5">{children}</div>
+        <div className="scrollbar-slim overflow-y-auto overscroll-contain px-6 py-5">{children}</div>
       </div>
     </div>
   );
