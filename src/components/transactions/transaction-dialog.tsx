@@ -81,8 +81,29 @@ function TransactionDialogContent({ onClose, members, currency, transaction }: D
           : "Log it once. It shows up in both of your totals."
       }
       eyebrow={isEdit ? undefined : "New entry"}
+      footer={
+        <div className="flex items-center justify-between gap-3">
+          <p className="hidden max-w-[150px] text-[10.5px] leading-relaxed text-muted/70 sm:block">
+            {type === "income" ? "Money in" : "Money out"} · visible to both of you
+          </p>
+          <div className="flex gap-2">
+            <button type="button" onClick={onClose} disabled={pending} className={buttonClass("ghost", "md")}>
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="transaction-dialog-form"
+              disabled={pending}
+              className={buttonClass("primary", "md", "min-w-[132px]")}
+            >
+              {pending ? <Spinner /> : null}
+              {pending ? "Saving…" : isEdit ? "Save changes" : type === "income" ? "Add income" : "Add expense"}
+            </button>
+          </div>
+        </div>
+      }
     >
-      <form action={formAction} className="space-y-5">
+      <form id="transaction-dialog-form" action={formAction} className="space-y-5">
         {transaction ? <input type="hidden" name="id" value={transaction.id} /> : null}
         <input type="hidden" name="type" value={type} />
         <input type="hidden" name="category" value={type === "income" ? "income" : category} />
@@ -263,20 +284,6 @@ function TransactionDialogContent({ onClose, members, currency, transaction }: D
           </Field>
         </div>
 
-        <div className="sticky bottom-[-20px] z-10 -mx-6 flex items-center justify-between gap-3 border-t border-white/[0.06] bg-[#101217]/95 px-6 pt-4 pb-[max(12px,env(safe-area-inset-bottom))] backdrop-blur-xl sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:pb-0 sm:backdrop-blur-none">
-          <p className="max-w-[150px] text-[10.5px] leading-relaxed text-muted/70">
-            {type === "income" ? "Money in" : "Money out"} · visible to both of you
-          </p>
-          <div className="flex gap-2">
-            <button type="button" onClick={onClose} disabled={pending} className={buttonClass("ghost", "md")}>
-              Cancel
-            </button>
-            <button type="submit" disabled={pending} className={buttonClass("primary", "md", "min-w-[132px]")}>
-              {pending ? <Spinner /> : null}
-              {pending ? "Saving…" : isEdit ? "Save changes" : type === "income" ? "Add income" : "Add expense"}
-            </button>
-          </div>
-        </div>
       </form>
     </Dialog>
   );

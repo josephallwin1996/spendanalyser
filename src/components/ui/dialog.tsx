@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -10,6 +11,7 @@ export function Dialog({
   title,
   description,
   children,
+  footer,
   className,
   eyebrow,
 }: {
@@ -18,12 +20,18 @@ export function Dialog({
   title: string;
   description?: string;
   children: React.ReactNode;
+  footer?: React.ReactNode;
   className?: string;
   eyebrow?: string;
 }) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setPortalTarget(document.body);
+  }, []);
 
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -54,9 +62,9 @@ export function Dialog({
     };
   }, [open]);
 
-  if (!open) return null;
+  if (!open || !portalTarget) return null;
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center"
       role="dialog"
@@ -73,7 +81,8 @@ export function Dialog({
       <div
         ref={panelRef}
         className={cn(
-          "relative z-10 flex max-h-[92dvh] w-full animate-pop flex-col overflow-hidden rounded-t-[28px] border border-white/[0.09] bg-[#101217] shadow-[0_30px_100px_-20px_rgba(0,0,0,0.9)] sm:max-w-lg sm:rounded-[28px]",
+          "relative z-10 flex max-h-[92dvh] min-h-0 w-full animate-pop flex-col overflow-hidden rounded-t-[28px] border border-white/[0.09] bg-[#101217] shadow-[0_30px_100px_-20px_rgba(0,0,0,0.9)] sm:max-w-lg sm:rounded-[28px]",
+          footer && "h-[92dvh] sm:h-auto",
           className,
         )}
       >
@@ -96,9 +105,15 @@ export function Dialog({
             <X size={17} />
           </button>
         </div>
-        <div className="scrollbar-slim overflow-y-auto overscroll-contain px-6 py-5">{children}</div>
+        <div className="scrollbar-slim min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-5">{children}</div>
+        {footer ? (
+          <div className="shrink-0 border-t border-white/[0.06] bg-[#101217] px-6 pb-[max(12px,env(safe-area-inset-bottom))] pt-4">
+            {footer}
+          </div>
+        ) : null}
       </div>
-    </div>
+    </div>,
+    portalTarget,
   );
 }
 
