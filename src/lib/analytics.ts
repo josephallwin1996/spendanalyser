@@ -9,7 +9,7 @@ import {
   todayISO,
   weekdayIndex,
 } from "./dates";
-import type { Budget, PublicUser, Settlement, Transaction } from "./types";
+import type { Budget, PublicUser, Transaction } from "./types";
 
 export type CategoryTotal = {
   id: string;
@@ -96,22 +96,6 @@ export type WeekdayTotal = {
   amount: number;
   count: number;
   share: number;
-};
-
-export type SettlementSummary = {
-  amount: number;
-  owedBy: PublicUser | null;
-  owedTo: PublicUser | null;
-  paidMembersTotal: number;
-  individualsPaid: number;
-  balances: {
-    member: PublicUser;
-    paid: number;
-    fairShare: number;
-    balance: number;
-  }[];
-  settlements: Settlement[];
-  hasPartner: boolean;
 };
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -316,60 +300,6 @@ export function summarizeBudgets(transactions: Transaction[], budgets: Budget[])
     ratio: totalBudget > 0 ? totalSpent / totalBudget : 0,
     unbudgetedSpent: round(unbudgetedSpent),
     overCount: items.filter((item) => item.spent > item.budget).length,
-  };
-}
-
-export function computeSettlement(
-  transactions: Transaction[],
-  settlements: Settlement[],
-  members: PublicUser[],
-): SettlementSummary {
-  const individualExpenses = transactions.filter(
-    (transaction) =>
-      transaction.type === "expense" &&
-      transaction.paidBy !== "joint" &&
-      members.some((member) => member.id === transaction.paidBy),
-  );
-
-  const paidMembersTotal = round(
-    individualExpenses.reduce((sum, transaction) => sum + transaction.amount, 0),
-  );
-  const totalShares = members.reduce((sum, member) => sum + member.sharePercent, 0) || 100;
-
-  const balances = members.map((member) => {
-    const paid = round(
-      individualExpenses
-        .filter((transaction) => transaction.paidBy === member.id)
-        .reduce((sum, transaction) => sum + transaction.amount, 0),
-    );
-    const fairShare = round((member.sharePercent / totalShares) * paidMembersTotal);
-    return {
-      member,
-      paid,
-      fairShare,
-      balance: round(paid - fairShare),
-    };
-  });
-
-  for (const settlement of settlements) {
-    const from = balances.find((entry) => entry.member.id === settlement.fromUserId);
-    const to = balances.find((entry) => entry.member.id === settlement.toUserId);
-    if (from) from.balance = round(from.balance + settlement.amount);
-    if (to) to.balance = round(to.balance - settlement.amount);
-  }
-
-  const positive = balances.find((entry) => entry.balance > 0.5);
-  const negative = balances.find((entry) => entry.balance < -0.5);
-
-  return {
-    amount: positive ? round(positive.balance) : 0,
-    owedBy: positive && negative ? negative.member : null,
-    owedTo: positive && negative ? positive.member : null,
-    paidMembersTotal,
-    individualsPaid: individualExpenses.length,
-    balances,
-    settlements,
-    hasPartner: members.length > 1,
   };
 }
 

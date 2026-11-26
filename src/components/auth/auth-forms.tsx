@@ -37,7 +37,7 @@ export function LoginForm() {
         Pick up where you two left off.
       </h1>
       <p className="mt-2.5 text-sm leading-relaxed text-muted">
-        Sign in to see this month&apos;s spending, budgets and what&apos;s left to settle.
+        Sign in to see this month&apos;s spending, budgets, and household activity.
       </p>
 
       <form action={formAction} className="mt-8 space-y-4">

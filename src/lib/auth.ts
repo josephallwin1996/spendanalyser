@@ -18,7 +18,6 @@ export function serializeUser(user: UserDoc): PublicUser {
     name: user.name,
     email: user.email,
     color: user.color,
-    sharePercent: user.sharePercent,
     joinedAt: user.createdAt.toISOString(),
   };
 }

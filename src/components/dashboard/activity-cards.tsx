@@ -10,18 +10,14 @@ import { getCategory } from "@/lib/categories";
 
 export function WhoPaidCard({
   byPayer,
-  members,
   currentUserId,
   currency,
 }: {
   byPayer: PayerTotal[];
-  members: PublicUser[];
   currentUserId: string;
   currency: string;
 }) {
   const total = byPayer.reduce((sum, payer) => sum + payer.amount, 0);
-  const shares = members.map((member) => member.sharePercent);
-  const splitLabel = members.length === 2 ? `${shares[0]} / ${shares[1]}` : null;
 
   return (
     <Card className="flex h-full flex-col p-5">
@@ -30,14 +26,6 @@ export function WhoPaidCard({
           <p className="text-[10.5px] font-medium uppercase tracking-[0.15em] text-muted">Contributions</p>
           <h2 className="mt-1 text-[15px] font-semibold tracking-tight text-white">Who paid</h2>
         </div>
-        {splitLabel ? (
-          <Link
-            href="/settings"
-            className="inline-flex items-center gap-1 text-[11px] text-muted transition-colors hover:text-white"
-          >
-            {splitLabel} split <ArrowUpRight size={12} />
-          </Link>
-        ) : null}
       </div>
 
       {total > 0 ? (
@@ -80,9 +68,7 @@ export function WhoPaidCard({
           </div>
 
           <p className="mt-4 border-t border-white/[0.055] pt-3 text-[10.5px] leading-relaxed text-muted/70">
-            {members.length === 2
-              ? `Shared costs split ${shares[0]}% / ${shares[1]}%. Joint expenses are shared from your account.`
-              : "Invite your partner to start splitting shared costs."}
+            Amounts show each person&apos;s share of total recorded expenses.
           </p>
         </>
       ) : (

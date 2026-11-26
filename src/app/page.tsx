@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, Scale, ShieldCheck, Sparkles, Target } from "lucide-react";
+import { ArrowRight, BarChart3, ShieldCheck, Sparkles, Target } from "lucide-react";
 import { buttonClass } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import { getViewer } from "@/lib/auth";
@@ -17,9 +17,9 @@ export default async function HomePage() {
       copy: "Log personal or joint expenses in seconds and see how the month is pacing together.",
     },
     {
-      icon: Scale,
-      title: "Fair-share settlements",
-      copy: "Split 50/50 or proportionally to income. Tandem calculates who owes whom automatically.",
+      icon: BarChart3,
+      title: "Clear spending insights",
+      copy: "See household totals, spending categories, and how this month compares.",
     },
     {
       icon: Target,
@@ -61,7 +61,7 @@ export default async function HomePage() {
             </h1>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
               Tandem is a calm, private spending tracker for couples. Track shared and individual expenses, keep
-              budgets aligned, and settle up in a tap.
+              budgets aligned, and understand where your money goes.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">

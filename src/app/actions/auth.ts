@@ -55,7 +55,6 @@ export async function signup(_prevState: ActionState, formData: FormData): Promi
       passwordHash,
       householdId: null,
       color: PARTNER_COLORS[0],
-      sharePercent: 100,
       createdAt: new Date(),
     };
     const result = await users.insertOne(newUser);

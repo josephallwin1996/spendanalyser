@@ -10,7 +10,6 @@ export type UserDoc = {
   passwordHash: string;
   householdId: ObjectId | null;
   color: string;
-  sharePercent: number;
   createdAt: Date;
 };
 
@@ -44,17 +43,6 @@ export type BudgetDoc = {
   updatedAt: Date;
 };
 
-export type SettlementDoc = {
-  _id: ObjectId;
-  householdId: ObjectId;
-  fromUserId: ObjectId;
-  toUserId: ObjectId;
-  amount: number;
-  date: string;
-  note?: string;
-  createdAt: Date;
-};
-
 // Serializable shapes passed to Client Components.
 
 export type PublicUser = {
@@ -62,7 +50,6 @@ export type PublicUser = {
   name: string;
   email: string;
   color: string;
-  sharePercent: number;
   joinedAt: string;
 };
 
@@ -100,15 +87,6 @@ export type ImportRow = {
   type: TxType;
   category?: string;
   paidBy: string;
-};
-
-export type Settlement = {
-  id: string;
-  fromUserId: string;
-  toUserId: string;
-  amount: number;
-  date: string;
-  note?: string;
 };
 
 export type Viewer = {

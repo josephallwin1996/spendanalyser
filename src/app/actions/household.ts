@@ -66,7 +66,6 @@ export async function createHousehold(_prevState: ActionState, formData: FormDat
       $set: {
         householdId,
         color: PARTNER_COLORS[0],
-        sharePercent: 100,
       },
     },
   );
@@ -107,7 +106,7 @@ export async function joinHousehold(_prevState: ActionState, formData: FormData)
 
   await users.updateOne(
     { _id: new ObjectId(viewer.user.id) },
-    { $set: { householdId: household._id, color, sharePercent: 50 } },
+    { $set: { householdId: household._id, color } },
   );
 
   // Guard against concurrent joins exceeding MAX_MEMBERS on standalone MongoDB without transactions.
@@ -115,12 +114,10 @@ export async function joinHousehold(_prevState: ActionState, formData: FormData)
   if (memberCount > MAX_MEMBERS) {
     await users.updateOne(
       { _id: new ObjectId(viewer.user.id) },
-      { $set: { householdId: null, color: PARTNER_COLORS[0], sharePercent: 100 } },
+      { $set: { householdId: null, color: PARTNER_COLORS[0] } },
     );
     return errorState("This household is already full. A couple means two, after all.");
   }
-
-  await users.updateMany({ householdId: household._id }, { $set: { sharePercent: 50 } });
 
   revalidateApp();
   redirect("/dashboard");
@@ -166,44 +163,6 @@ export async function updateProfile(_prevState: ActionState, formData: FormData)
   return successState("Your name is updated.");
 }
 
-export async function updateSplit(_prevState: ActionState, formData: FormData): Promise<ActionState> {
-  const viewer = await requireHousehold();
-  if (viewer.members.length < 2) {
-    return errorState("Invite your partner first, then choose how to split shared costs.");
-  }
-
-  const schema = z.object({
-    shareA: z.coerce
-      .number()
-      .min(5, "Keep the split between 5% and 95%.")
-      .max(95, "Keep the split between 5% and 95%."),
-  });
-  const parsed = schema.safeParse({ shareA: formString(formData, "shareA") });
-  if (!parsed.success) return validationErrors(parsed.error);
-
-  const shareA = Math.round(parsed.data.shareA);
-  const shareB = 100 - shareA;
-  const requestedFirstId = formString(formData, "firstMemberId");
-  const first =
-    viewer.members.find((member) => member.id === requestedFirstId) ?? viewer.members[0];
-  const second = viewer.members.find((member) => member.id !== first.id) ?? viewer.members[1];
-  const { users } = await getCollections();
-
-  await Promise.all([
-    users.updateOne(
-      { _id: new ObjectId(first.id) },
-      { $set: { sharePercent: shareA } },
-    ),
-    users.updateOne(
-      { _id: new ObjectId(second.id) },
-      { $set: { sharePercent: shareB } },
-    ),
-  ]);
-
-  revalidateApp();
-  return successState(`Split updated to ${shareA}/${shareB}.`);
-}
-
 export async function regenerateInvite(): Promise<ActionState> {
   const viewer = await requireHousehold();
   const { households } = await getCollections();
@@ -234,16 +193,10 @@ export async function leaveHousehold(): Promise<ActionState> {
 
   await users.updateOne(
     { _id: userId },
-    { $set: { householdId: null, sharePercent: 100, color: PARTNER_COLORS[0] } },
+    { $set: { householdId: null, color: PARTNER_COLORS[0] } },
   );
 
   const remaining = await users.find({ householdId }).toArray();
-  if (remaining.length === 1) {
-    await users.updateOne(
-      { _id: remaining[0]._id },
-      { $set: { sharePercent: 100 } },
-    );
-  }
   if (remaining.length === 0) {
     await households.deleteOne({ _id: householdId });
   }

@@ -2,7 +2,18 @@
 
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Pencil, Plus, ReceiptText, Search, SlidersHorizontal, StickyNote, Trash2, X } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Pencil,
+  Plus,
+  ReceiptText,
+  Search,
+  SlidersHorizontal,
+  StickyNote,
+  Trash2,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { deleteTransaction } from "@/app/actions/transactions";
 import { TransactionDialog } from "@/components/transactions/transaction-dialog";
@@ -17,6 +28,8 @@ import { relativeDayLabel } from "@/lib/dates";
 import { firstName, formatMoney } from "@/lib/format";
 import type { PublicUser, Transaction, TxType } from "@/lib/types";
 import { cn } from "@/lib/utils";
+
+const TRANSACTIONS_PER_PAGE = 15;
 
 type Filters = {
   month: string;
@@ -44,6 +57,8 @@ export function TransactionsView({
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
   const [search, setSearch] = useState(filters.query ?? "");
+  const [pagination, setPagination] = useState({ month: filters.month, page: 1 });
+  const currentPage = pagination.month === filters.month ? pagination.page : 1;
   const [dialog, setDialog] = useState<{ transaction?: Transaction } | null>(null);
   const [deleting, setDeleting] = useState<Transaction | null>(null);
   const [deletePending, startDelete] = useTransition();
@@ -74,6 +89,7 @@ export function TransactionsView({
   }, [search, currentQuery, updateParams]);
 
   function setFilter(key: string, value: string) {
+    setCurrentPage(1);
     updateParams((params) => {
       if (!value || value === "all") params.delete(key);
       else params.set(key, value);
@@ -92,7 +108,14 @@ export function TransactionsView({
 
   const groups = useMemo(() => {
     const map = new Map<string, Transaction[]>();
-    for (const transaction of transactions) {
+    const pageCount = Math.ceil(transactions.length / TRANSACTIONS_PER_PAGE);
+    const page = Math.min(currentPage, Math.max(pageCount, 1));
+    const pageTransactions = transactions.slice(
+      (page - 1) * TRANSACTIONS_PER_PAGE,
+      page * TRANSACTIONS_PER_PAGE,
+    );
+
+    for (const transaction of pageTransactions) {
       const list = map.get(transaction.date) ?? [];
       list.push(transaction);
       map.set(transaction.date, list);
@@ -107,15 +130,29 @@ export function TransactionsView({
         .filter((item) => item.type === "income")
         .reduce((sum, item) => sum + item.amount, 0),
     }));
-  }, [transactions]);
+  }, [transactions, currentPage]);
 
+  const pageCount = Math.ceil(transactions.length / TRANSACTIONS_PER_PAGE);
+  const page = Math.min(currentPage, Math.max(pageCount, 1));
+  const firstVisible = transactions.length === 0 ? 0 : (page - 1) * TRANSACTIONS_PER_PAGE + 1;
+  const lastVisible = Math.min(page * TRANSACTIONS_PER_PAGE, transactions.length);
   const hasFilters = Boolean(filters.category || filters.paidBy || filters.type || filters.query);
+
+  function setCurrentPage(nextPage: number) {
+    setPagination({ month: filters.month, page: nextPage });
+  }
 
   function clearFilters() {
     setSearch("");
+    setCurrentPage(1);
     updateParams((params) => {
       for (const key of ["category", "paidBy", "type", "q"]) params.delete(key);
     });
+  }
+
+  function updateSearch(value: string) {
+    setSearch(value);
+    setCurrentPage(1);
   }
 
   function confirmDelete() {
@@ -166,7 +203,7 @@ export function TransactionsView({
               <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted/70" />
               <input
                 value={search}
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => updateSearch(event.target.value)}
                 placeholder="Search descriptions…"
                 aria-label="Search transactions"
                 className="h-9 w-full rounded-xl border border-white/[0.07] bg-white/[0.025] pl-9 pr-8 text-[12.5px] text-white outline-none transition placeholder:text-muted/50 focus:border-brand/40 focus:ring-4 focus:ring-brand/[0.06]"
@@ -174,7 +211,7 @@ export function TransactionsView({
               {search ? (
                 <button
                   type="button"
-                  onClick={() => setSearch("")}
+                  onClick={() => updateSearch("")}
                   aria-label="Clear search"
                   className="absolute right-2.5 top-1/2 grid size-5 -translate-y-1/2 place-items-center rounded-md text-muted hover:bg-white/[0.06] hover:text-white"
                 >
@@ -356,6 +393,40 @@ export function TransactionsView({
           ))
         )}
       </div>
+
+      {pageCount > 1 ? (
+        <nav
+          aria-label="Transaction pages"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3"
+        >
+          <p aria-live="polite" className="text-[11.5px] text-muted">
+            Showing {firstVisible}–{lastVisible} of {transactions.length}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setCurrentPage(page - 1)}
+              disabled={page === 1}
+              aria-label="Previous transaction page"
+            >
+              <ChevronLeft size={14} /> Previous
+            </Button>
+            <span className="min-w-[72px] text-center text-[11.5px] text-muted">
+              {page} / {pageCount}
+            </span>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setCurrentPage(page + 1)}
+              disabled={page === pageCount}
+              aria-label="Next transaction page"
+            >
+              Next <ChevronRight size={14} />
+            </Button>
+          </div>
+        </nav>
+      ) : null}
 
       <TransactionDialog
         open={dialog !== null}

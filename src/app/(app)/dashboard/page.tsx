@@ -4,20 +4,18 @@ import { PageHeading } from "@/components/app-shell/page-heading";
 import { RecentActivityCard, WhoPaidCard } from "@/components/dashboard/activity-cards";
 import { DeltaChip, MetricCard } from "@/components/dashboard/metric-card";
 import { BudgetPulseCard, CategoryCard } from "@/components/dashboard/overview-cards";
-import { SettleUpCard } from "@/components/dashboard/settle-up-card";
 import { SpendTrendChart } from "@/components/dashboard/spend-trend-chart";
 import { AddTransactionButton } from "@/components/transactions/transaction-dialog";
 import { Card } from "@/components/ui/card";
 import { MonthSwitcher } from "@/components/ui/month-switcher";
 import {
-  computeSettlement,
   percentChange,
   summarizeBudgets,
   summarizeMonth,
 } from "@/lib/analytics";
 import { requireHousehold } from "@/lib/auth";
 import { currentMonthKey, greeting, isValidMonth, monthLabel, shiftMonth } from "@/lib/dates";
-import { getBudgets, getSettlementsForMonth, getTransactionsForMonth } from "@/lib/data";
+import { getBudgets, getTransactionsForMonth } from "@/lib/data";
 import { firstName, formatMoney, formatPercent } from "@/lib/format";
 
 export const metadata: Metadata = {
@@ -37,18 +35,15 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
   const month = monthParam && isValidMonth(monthParam) ? monthParam : currentMonthKey();
   const previousMonth = shiftMonth(month, -1);
 
-  const [transactions, previousTransactions, budgets, settlements] = await Promise.all([
+  const [transactions, previousTransactions, budgets] = await Promise.all([
     getTransactionsForMonth(household.id, month),
     getTransactionsForMonth(household.id, previousMonth),
     getBudgets(household.id),
-    getSettlementsForMonth(household.id, month),
   ]);
 
   const summary = summarizeMonth(transactions, month, members);
   const previousSummary = summarizeMonth(previousTransactions, previousMonth, members);
   const budgetSummary = summarizeBudgets(transactions, budgets);
-  const settlement = computeSettlement(transactions, settlements, members);
-
   const spendChange = percentChange(summary.expenses, previousSummary.expenses);
   const incomeChange = percentChange(summary.income, previousSummary.income);
 
@@ -189,7 +184,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       </div>
 
       <div className="mt-3 grid gap-3 lg:grid-cols-12 lg:gap-4">
-        <Card className="animate-rise stagger-2 p-5 lg:col-span-8">
+        <Card className="animate-rise stagger-2 p-5 lg:col-span-12">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-[10.5px] font-medium uppercase tracking-[0.15em] text-muted">Spending pace</p>
@@ -230,17 +225,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
             </span>
           </div>
         </Card>
-
-        <div className="animate-rise stagger-3 lg:col-span-4">
-          <SettleUpCard
-            summary={settlement}
-            members={members}
-            currency={household.currency}
-            month={month}
-            currentUserId={user.id}
-            inviteCode={household.inviteCode}
-          />
-        </div>
       </div>
 
       <div className="mt-3 grid gap-3 lg:grid-cols-12 lg:gap-4">
@@ -268,7 +252,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         <div className="animate-rise stagger-6 lg:col-span-5">
           <WhoPaidCard
             byPayer={summary.byPayer}
-            members={members}
             currentUserId={user.id}
             currency={household.currency}
           />

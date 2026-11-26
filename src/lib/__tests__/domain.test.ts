@@ -1,17 +1,16 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { computeSettlement, summarizeBudgets, summarizeMonth } from "../analytics";
+import { summarizeBudgets, summarizeMonth } from "../analytics";
 import { resolveCategory } from "../categories";
 import { parseTransactionsCsv } from "../csv";
 import { daysInMonth, isValidISODate, shiftMonth } from "../dates";
-import type { Budget, PublicUser, Settlement, Transaction } from "../types";
+import type { Budget, PublicUser, Transaction } from "../types";
 
 const alice: PublicUser = {
   id: "u1",
   name: "Alice",
   email: "alice@example.com",
   color: "#FF8A70",
-  sharePercent: 60,
   joinedAt: "2026-01-01T00:00:00.000Z",
 };
 
@@ -20,7 +19,6 @@ const bob: PublicUser = {
   name: "Bob",
   email: "bob@example.com",
   color: "#63E6C1",
-  sharePercent: 40,
   joinedAt: "2026-01-02T00:00:00.000Z",
 };
 
@@ -38,34 +36,6 @@ function tx(overrides: Partial<Transaction>): Transaction {
     ...overrides,
   };
 }
-
-describe("computeSettlement", () => {
-  it("computes weighted fair-share excluding joint expenses and income", () => {
-    const transactions: Transaction[] = [
-      tx({ id: "1", amount: 1000, paidBy: "u1", type: "expense" }),
-      tx({ id: "2", amount: 500, paidBy: "joint", type: "expense" }),
-      tx({ id: "3", amount: 2000, paidBy: "u2", type: "income", category: "income" }),
-    ];
-
-    const result = computeSettlement(transactions, [], [alice, bob]);
-    assert.equal(result.paidMembersTotal, 1000);
-    assert.equal(result.amount, 400);
-    assert.equal(result.owedBy?.id, "u2");
-    assert.equal(result.owedTo?.id, "u1");
-  });
-
-  it("reduces balance when settlements are recorded", () => {
-    const transactions: Transaction[] = [tx({ id: "1", amount: 1000, paidBy: "u1" })];
-    const settlements: Settlement[] = [
-      { id: "s1", fromUserId: "u2", toUserId: "u1", amount: 400, date: "2026-11-15" },
-    ];
-
-    const result = computeSettlement(transactions, settlements, [alice, bob]);
-    assert.equal(result.amount, 0);
-    assert.equal(result.owedBy, null);
-    assert.equal(result.owedTo, null);
-  });
-});
 
 describe("summarizeBudgets & summarizeMonth", () => {
   it("separates budgeted vs unbudgeted expenses", () => {

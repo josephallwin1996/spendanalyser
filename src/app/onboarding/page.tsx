@@ -73,7 +73,7 @@ export default async function OnboardingPage() {
                 <div className="mt-7 space-y-3 border-t border-white/[0.06] pt-5">
                   {[
                     ["Shared ledger", "Every expense, visible to both."],
-                    ["Fair splits", "Who paid, who owes, settled simply."],
+                    ["Spending awareness", "See household totals and who paid."],
                     ["Budgets in sync", "Stay aligned without the check-ins."],
                   ].map(([title, copy]) => (
                     <div key={title} className="flex gap-3">

@@ -27,11 +27,9 @@ export function Dialog({
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
-
-  useEffect(() => {
-    setPortalTarget(document.body);
-  }, []);
+  const [portalTarget] = useState<HTMLElement | null>(() =>
+    typeof document === "undefined" ? null : document.body,
+  );
 
   useEffect(() => {
     onCloseRef.current = onClose;

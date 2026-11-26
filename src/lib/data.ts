@@ -5,8 +5,6 @@ import type {
   Budget,
   BudgetDoc,
   PublicUser,
-  Settlement,
-  SettlementDoc,
   Transaction,
   TransactionDoc,
   TxType,
@@ -32,17 +30,6 @@ function serializeBudget(doc: BudgetDoc): Budget {
     id: doc._id.toString(),
     category: doc.category,
     amount: doc.amount,
-  };
-}
-
-function serializeSettlement(doc: SettlementDoc): Settlement {
-  return {
-    id: doc._id.toString(),
-    fromUserId: doc.fromUserId.toString(),
-    toUserId: doc.toUserId.toString(),
-    amount: doc.amount,
-    date: doc.date,
-    note: doc.note,
   };
 }
 
@@ -110,34 +97,6 @@ export async function getBudgets(householdId: string | ObjectId): Promise<Budget
   const { budgets } = await getCollections();
   const docs = await budgets.find({ householdId: objectId(householdId) }).sort({ amount: -1 }).toArray();
   return docs.map(serializeBudget);
-}
-
-export async function getSettlementsForMonth(
-  householdId: string | ObjectId,
-  month: string,
-): Promise<Settlement[]> {
-  const { settlements } = await getCollections();
-  const { start, end } = monthRange(month);
-  const docs = await settlements
-    .find({ householdId: objectId(householdId), date: { $gte: start, $lte: end } })
-    .sort({ date: -1, createdAt: -1 })
-    .limit(100)
-    .toArray();
-  return docs.map(serializeSettlement);
-}
-
-export async function getSettlementsForRange(
-  householdId: string | ObjectId,
-  start: string,
-  end: string,
-): Promise<Settlement[]> {
-  const { settlements } = await getCollections();
-  const docs = await settlements
-    .find({ householdId: objectId(householdId), date: { $gte: start, $lte: end } })
-    .sort({ date: -1, createdAt: -1 })
-    .limit(500)
-    .toArray();
-  return docs.map(serializeSettlement);
 }
 
 export function memberName(members: PublicUser[], userId: string) {

@@ -86,14 +86,14 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 <Check size={15} />
               </span>
               <div>
-                <p className="text-[11px] text-muted">Settlement suggestion</p>
-                <p className="text-[12px] font-medium text-white">Arjun owes Maya {formatMoney(3240, "INR")}</p>
+                <p className="text-[11px] text-muted">Monthly insight</p>
+                <p className="text-[12px] font-medium text-white">Track spending together</p>
               </div>
             </div>
           </div>
 
           <ul className="mt-14 space-y-2.5">
-            {["One shared ledger, updated by both of you", "Fair-share splits that update themselves", "Budgets you can actually stick to"].map(
+            {["One shared ledger, updated by both of you", "Clear totals and spending breakdowns", "Budgets you can actually stick to"].map(
               (item) => (
                 <li key={item} className="flex items-center gap-2.5 text-[12.5px] text-muted">
                   <span className="grid size-4 place-items-center rounded-full bg-brand/10 text-brand">

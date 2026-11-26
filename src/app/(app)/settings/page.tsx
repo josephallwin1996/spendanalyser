@@ -5,7 +5,6 @@ import {
   InviteSettingsCard,
   LeaveHouseholdCard,
   ProfileSettingsCard,
-  SplitSettingsCard,
 } from "@/components/settings/settings-forms";
 import { requireHousehold } from "@/lib/auth";
 
@@ -21,14 +20,13 @@ export default async function SettingsPage() {
       <PageHeading
         eyebrow="Household"
         title="Settings"
-        description="Manage your profile, household currency, partner invite code, and fair-share split."
+        description="Manage your profile, household currency, and partner invite code."
       />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <ProfileSettingsCard user={user} />
         <HouseholdSettingsCard household={household} />
         <InviteSettingsCard household={household} members={members} />
-        <SplitSettingsCard members={members} />
       </div>
 
       <div className="mt-4">

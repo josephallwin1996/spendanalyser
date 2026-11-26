@@ -1,5 +1,5 @@
 import { MongoClient, type Db, type WithoutId } from "mongodb";
-import type { BudgetDoc, HouseholdDoc, SettlementDoc, TransactionDoc, UserDoc } from "./types";
+import type { BudgetDoc, HouseholdDoc, TransactionDoc, UserDoc } from "./types";
 
 const globalForMongo = globalThis as unknown as {
   tandemMongoClient?: Promise<MongoClient>;
@@ -45,9 +45,6 @@ async function ensureIndexes(db: Db) {
     db
       .collection<WithoutId<BudgetDoc>>("budgets")
       .createIndex({ householdId: 1, category: 1 }, { unique: true }),
-    db
-      .collection<WithoutId<SettlementDoc>>("settlements")
-      .createIndex({ householdId: 1, date: -1 }),
   ]);
 }
 
@@ -70,6 +67,5 @@ export async function getCollections() {
     households: db.collection<HouseholdDoc>("households"),
     transactions: db.collection<TransactionDoc>("transactions"),
     budgets: db.collection<BudgetDoc>("budgets"),
-    settlements: db.collection<SettlementDoc>("settlements"),
   };
 }
