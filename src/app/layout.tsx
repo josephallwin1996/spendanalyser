@@ -18,6 +18,20 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Tandem",
+    startupImage: [
+      {
+        url: "/apple-touch-icon.png",
+      },
+    ],
+  },
+  icons: {
+    apple: [
+      {
+        url: "/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
   },
   formatDetection: {
     telephone: false,
@@ -33,6 +47,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: "#08090b",
   colorScheme: "dark",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
